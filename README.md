@@ -9,9 +9,9 @@ This project tackles the challenge of classifying each pixel in flood-related im
 ## About the dataset 
 This project uses the FloodNet dataset for segmenting images, though it's too large to include directly in this repository.
 
-Dataset Details:
-Training Set: 1,843 images
-Testing Set: 500 images for evaluation
+### Dataset Details:
+- **Training Set**: 1,843 images
+- **Testing Set**: 500 images for evaluation
 These samples cover a range of environmental and flood-related categories to help train and test the segmentation model.
 
 ### Classes:
