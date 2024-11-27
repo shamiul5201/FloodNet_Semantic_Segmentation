@@ -1,18 +1,20 @@
-# Semantic_Segmentation_Application_FloodNet
-Exploring the Environment with Semantic Segmentation: A FloodNet Application for Better Scene Understanding.
+# Semantic Segmantation for FloodNet Dataset
 
 ![23](https://github.com/user-attachments/assets/3320727f-4d88-4576-96e1-d80829d2f525)
 
-## Description
-This project tackles the challenge of classifying each pixel in flood-related images into 10 categories using the FloodNet dataset. By creating a model that accurately segments scenes in flood-affected areas, it aims to support a clearer understanding of environmental data, helping inform disaster response and future planning efforts
+## Overview
 
-## About the dataset 
-This project uses the FloodNet dataset for segmenting images, though it's too large to include directly in this repository.
+FloodNet is a semantic segmentation project designed to identify flooded and non-flooded regions in aerial imagery. The project uses deep learning techniques based on the DeepLabV3+ architecture using TensorFlow and Keras. to classify each pixel in an image into predefined categories (e.g., water, Tree, Vehicle).
 
-### Dataset Details:
-- **Training Set**: 1,843 images
-- **Testing Set**: 500 images for evaluation
-These samples cover a range of environmental and flood-related categories to help train and test the segmentation model.
+This notebook implements the end-to-end pipeline for:
+
+- **An EfficientNetV2-S backbone pretrained on ImageNet for feature extraction**.
+- **Dilated Spatial Pyramid Pooling (ASPP) for capturing multiscale context**.
+- **A custom decoder to upsample features to the input image resolution**.
+- **Preparing and preprocessing data**.
+- **Training and validating the segmentation model**.
+- **Evaluating performance metrics (e.g., Dice Coefficient, IoU)**.
+- **Performing inference on test images with visualized outputs**.
 
 ### Classes:
 The dataset includes **10 classes**, each representing different features in flood-affected areas:
@@ -30,24 +32,45 @@ The dataset includes **10 classes**, each representing different features in flo
 | 8        | Pool               |
 | 9        | Grass              |
 
-### Segmentation Model 
-To train the model, I used a convolutional block structure designed to capture detailed features in the images. Started with EfficientNetV2S as the backbone, using layers with different dilation rates to capture features at various scales. The feature maps were then upsampled and combined to create a richer representation of the image.
 
-### Data augmentations
-To help the model generalize better and avoid overfitting, I have applied data augmentation techniques. These included random horizontal and vertical flips, slight rotations and shifts, and adjustments to brightness and contrast. This added variation to the training images, helping the model learn a broader range of patterns.
+## Code Breakdown
 
+### Input Specification
+The model accepts images of a specific shape (shape) defined during initialization. The input layer:
 ```python
-def transforms(self):
-        
-        train_transforms = A.Compose([
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            A.ShiftScaleRotate(scale_limit=0.2, rotate_limit=30, 
-                               shift_limit=0.2, p=0.5, border_mode=0),
-            A.RandomBrightnessContrast(brightness_limit=0.3, contrast_limit=0.3, p=0.5)
-        ])
-        return train_transforms
+model_input = Input(shape=shape)
 ```
+ensures compatibility with the EfficientNetV2 backbone.
+### Backbone Network
+EfficientNetV2-S is employed for extracting hierarchical feature maps:
+```python
+backbone = tf.keras.applications.EfficientNetV2S(include_top=False, weights="imagenet", input_tensor=model_input)
+backbone.trainable = True
+```
+The backbone's key feature maps are accessed for multiscale processing:
+- **block6b_expand_activation (smallest spatial resolution, richest features)**
+- **block4b_expand_activation**
+- **block3b_expand_activation**
+- **block2b_expand_activation (largest spatial resolution)**
+
+### Dilated Spatial Pyramid Pooling (ASPP)
+For multiscale context, the ASPP block processes outputs from deeper layers:
+```python
+input_a = DilatedSpatialPyramidPooling(input_a, num_filters=256)
+```
+Each ASPP block includes parallel dilated convolutions with varying dilation rates.
+
+### Upsampling and Decoder
+Outputs from the ASPP and other backbone layers are upsampled to match the desired resolution:
+```python
+input_a = UpSampling2D(size=(16, 16), interpolation="bilinear")(input_a)
+```
+### Final Layer
+The last layer applies a 1x1 convolution and softmax activation:
+```python
+outputs = Conv2D(num_classes, kernel_size=(1, 1), padding="valid", activation="softmax")(x)
+```
+This generates a segmentation map with probabilities across all classes.
 
 ### Training Hyperparameter:
 - **Epochs**: 40
@@ -55,9 +78,17 @@ def transforms(self):
 - **Optimizer**: AdamW with initial learning rate of 1e-3 and weight decay of 1e-5
 - **Learning Rate Scheduler**: ReduceLROnPlate
 
+#### Metrics include:
+- Dice Coefficient: Measures overlap between predicted and true masks.
+- Intersection over Union (IoU): Computes pixel-wise intersection vs union for each class.
+
 ### Loss and Metric Plots
 
 <img width="1008" alt="Screenshot 2024-11-14 at 10 45 59 am" src="https://github.com/user-attachments/assets/4ddeaa5f-16ec-4109-a1a7-e77cca8de1f7">
+
+### Inference and Visualization
+
+<img width="1004" alt="prediction" src="https://github.com/user-attachments/assets/0bbc681b-59ed-4f1a-8418-e8c944b6f633">
 
 ### Submission 
 <img width="1124" alt="Screenshot 2024-11-14 at 10 48 14 am" src="https://github.com/user-attachments/assets/8c9a7280-e945-483f-bbaf-7434fb51980f">
