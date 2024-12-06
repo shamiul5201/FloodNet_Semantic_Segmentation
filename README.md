@@ -94,13 +94,6 @@ This generates a segmentation map with probabilities across all classes.
 ### Submission 
 <img width="1124" alt="Screenshot 2024-11-14 at 10 48 14 am" src="https://github.com/user-attachments/assets/8c9a7280-e945-483f-bbaf-7434fb51980f">
 
-
-Loss and Metric Plots
-<img width="1008" alt="Screenshot 2024-11-14 at 10 45 59 am" src="https://github.com/user-attachments/assets/4ddeaa5f-16ec-4109-a1a7-e77cca8de1f7">
-
-Inference and Visualization
-<img width="1004" alt="prediction" src="https://github.com/user-attachments/assets/0bbc681b-59ed-4f1a-8418-e8c944b6f633">
-
 Submission
 <img width="1124" alt="Screenshot 2024-11-14 at 10 48 14 am" src="https://github.com/user-attachments/assets/8c9a7280-e945-483f-bbaf-7434fb51980f">
 
